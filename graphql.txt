@@ -1,0 +1,53 @@
+
+import { makeExecutableSchema } from 'graphql-tools';
+
+
+const typeDefs = `
+  type Query {
+		getall:[Emp],
+		emp(id:Int!):Emp
+  },
+	type Emp 
+{
+		id:Int
+    hello:String
+		
+  }`;
+
+var data = [
+  {hello: "dhananjay",id:1},
+	{hello: "rajendra",id:2},
+	{hello: "belhkar",id:3}]
+var all = function(){
+  return data;
+}
+var find=function(root,{id}){
+//   return data;
+  return data.filter(function(d1){
+    return d1.id === id;
+  })[0];
+}
+const resolvers = {
+  Query: {
+    getall:all,
+   	emp:find
+  }
+};
+
+export const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+});
+/*
+query {
+  getall 
+  {
+    hello
+}
+},
+query{
+  emp(id:1){
+    hello
+  }
+}
+*/
