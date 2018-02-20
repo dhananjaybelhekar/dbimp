@@ -6,7 +6,7 @@ const fetch = require('node-fetch')
 const util = require('util');
 const graphqlHTTP = require('express-graphql');
 
-var async =require('async');
+//var async =require('async');
 
 
 var mysql      = require('mysql');
