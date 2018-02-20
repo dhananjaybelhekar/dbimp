@@ -23,15 +23,19 @@ export class DashboardComponent implements OnInit {
   // };
   //constructor(private heroService: HeroService) { }
   //constructor(private dashboardService:DashboardService, 
-  constructor(private appolo:Apollo) {}
+  constructor(private appolo:Apollo) {
+
+  }
 
   ngOnInit() {
-    
+
     this.hello = this.appolo.watchQuery<any>({
       query:gql`query{
         empget{
           name
           id
+          email
+          body
         }
       }
       `
@@ -44,6 +48,7 @@ export class DashboardComponent implements OnInit {
       pagingType: 'full_numbers'
     };
   }
+  
   }
 
  // getHeroes(): void {

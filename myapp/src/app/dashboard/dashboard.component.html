@@ -71,9 +71,11 @@
   </tbody>
 </table> -->
       
-<table class="row-border hover">
+<table datatable [dtOptions]="dtOptions" class="row-border hover">
   <tr *ngFor="let d of hello | async">
     <td > {{d.name}}</td>
     <td>{{d.id}}</td>
+    <td>{{d.email}}</td>
+    <td>{{d.body}}</td>
   </tr>
 </table>
