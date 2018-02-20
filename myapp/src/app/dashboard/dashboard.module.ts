@@ -29,7 +29,7 @@ export class DashboardModule {
     apollo.create({
     // By default, this client will send queries to the
     // `/graphql` endpoint on the same host
-    link: httpLink.create({uri:'https://r9kzqlzq9n.lp.gql.zone/graphql'}),
+    link: httpLink.create({uri:'http://localhost:4000/g'}),
     cache: new InMemoryCache()
   });
 }

@@ -5,38 +5,6 @@ var { makeExecutableSchema } = require('graphql-tools');
 const fetch = require('node-fetch')
 const util = require('util');
 const graphqlHTTP = require('express-graphql');
-const {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLList
-} = require('graphql')
-var mysql      = require('mysql');
-
-var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : 'root',
-  database : '20180220'
-});
-connection.connect();
-
-const AuthorType = new GraphQLObjectType({
-  name: 'Author',
-  description: '...',
-
-  fields: () => ({
-    name: {
-      type: GraphQLString
-    },
-    id:{
-      type: GraphQLString
-    }})
-});
-
-
-
 const typeDefs = `
   type Query {
     empget:[Emp],
@@ -106,7 +74,7 @@ const typeDefs = `
 //     ];
     var getAll=function()
     {
-    return fetch('http://localhost:4000/data')
+    return fetch('https://jsonplaceholder.typicode.com/users')
       .then(response => response.json())
       .then(json => {
           return new Promise((resolve, reject)=>{
@@ -150,40 +118,7 @@ app.use(function(req, res, next) {
       next();
     }
 });
-/*
-graphqlExpress(req => {
-    return {
-      schema: myGraphQLSchema,
-      context: {
-        value: req.body.something,
-      },
-      // other options here
-    };
-  }),
-  */
-app.use('/graphql', bodyParser.json(), graphqlExpress(req => {
-    return {
-      schema: schema,
-      context: {
-        value: req.body.something,
-      },
-      // other options here
-    };
-  }));
-app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
-app.get('/data',function(req,res){
-connection.query('SELECT *from employee', function (error, results, fields) {
-  if (error) throw error;
-    res.send(results);
-});  
-});
-
-
-app.post('/g', graphqlHTTP({
-    schema: schema,
-    rootValue: resolvers,
-    graphiql: true
-}));
-
-
+// app.use('/graphql', bodyParser.json(), graphqlExpress({schema}));
+// app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
+app.use('/graphql', bodyParser.json(), graphqlExpress({schema}));
 app.listen(4000, () => console.log('Now browse to localhost:4000/graphiql'));
