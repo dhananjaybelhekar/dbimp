@@ -6,6 +6,9 @@ const fetch = require('node-fetch')
 const util = require('util');
 const graphqlHTTP = require('express-graphql');
 
+var async =require('async');
+
+
 var mysql      = require('mysql');
 
 var connection = mysql.createConnection({
@@ -22,7 +25,8 @@ connection.connect();
 const typeDefs = `
   type Query {
     empget:[DEmp],
-    emp(id:Int!):DEmp
+    emp(id:Int!):DEmp,
+    detaAll:[DEmp]
 
   },type DEmp{
     id:Int
@@ -98,6 +102,16 @@ const resolvers = {
   }
 };
 
+const resolvers1 = {
+  Query:{
+    getData:dataAll,
+  }
+};
+
+var dataAll=function(){
+  return [{id:1,name:"dhananjay",dept:"it",salary:123}];
+}
+
 var schema = makeExecutableSchema({typeDefs, resolvers});
 var app = express();
 app.use(bodyParser.json())
@@ -145,10 +159,45 @@ connection.query('SELECT *from employee where id='+req.query.id, function (error
 });  
 });
 
-app.post('/g', graphqlHTTP({
-    schema: schema,
-    rootValue: resolvers,
-    graphiql: true
+app.post('/g',graphqlHTTP(req=>{
+  console.log("/////////////////////");
+  console.log(req.query);
+  console.log(req.body);
+    return {
+      schema: schema,
+      rootValue: resolvers,
+      graphiql: true
+    }
+}));
+
+app.use('/all',graphqlHTTP(req=>{
+  console.log("*****************all****************");
+  console.log(req.param);
+  console.log(req.query);
+  console.log(req.body);
+    return {
+      schema: schema,
+      rootValue: {
+          detaAll:()=>{
+            console.log(req.body)
+            return new Promise((resolve,reject)=>{
+              qr='SELECT *from employee';
+              if(req.body.variables!= null && req.body.variables.qr)
+              {
+                qr=req.body.variables.qr;
+              }
+              connection.query(qr, function (error, results, fields) {
+                if (error) throw error;
+                resolve(results)
+              });
+
+            })
+            
+          }
+        }
+      ,
+      graphiql: true
+    }
 }));
 
 
