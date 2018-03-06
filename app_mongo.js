@@ -1,81 +1,17 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
 var { makeExecutableSchema } = require('graphql-tools');
-const fetch = require('node-fetch')
-const util = require('util');
 const graphqlHTTP = require('express-graphql');
+const mongoose = require('mongoose');
+mongoose.connect('mongodb://192.168.1.4/test');
 
+
+ var Schema = mongoose.Schema;
+//var { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+//const fetch = require('node-fetch')
+//const util = require('util');
 //var async =require('async');
 
-
-const mongoose = require('mongoose');
- var Schema = mongoose.Schema;
-mongoose.connect('mongodb://localhost/tw-UAT-20161212');
-
-
-const Per = mongoose.model('Txn_personnel',{});
-
-const typeDefs = `
-  type Query {
-    emp(_id:String!):DEmp,
-    empget:[DEmp]
-
-  },type DEmp{
-    _id:String
-    sequenceNumber:Int
-    titleMasterName:String
-    title:String
-  },
-  type  Emp{
-    id:Int
-    postId:Int
-    name:String
-    email:String
-    body:String
-    website: String
-    company:Company
-    address:Address
-  },  
-   type Address{
-      street: String
-      suite: String
-      city: String
-      zipcode: String
-       geo:Geo
-     },
-    type Geo{
-        lat: String
-        lng: String
-      },
-      type  Company {
-        name: String
-        catchPhrase: String
-        bs: String
-    }
-`;
-
-const resolvers = {
-  Query:{
-    empget:function(){
-        return new Promise((resolve, reject) => {
-              Per.find({}).exec(function(err,data){
-                resolve(JSON.parse(JSON.stringify(data)));
-              })  
-            });
-},
-    emp:function(root,id){
-      console.log('lll=>',id);
-        return new Promise((resolve, reject) => {
-              Per.find({"_id" : new mongoose.Types.ObjectId(id._id)}).exec(function(err,data){
-                console.log(data);
-                resolve(JSON.parse(JSON.stringify(data[0])));
-              })  
-            });
-}
-  }
-};
-var schema = makeExecutableSchema({typeDefs, resolvers});
 var app = express();
 app.use(bodyParser.json())
 app.use(function(req, res, next) {
@@ -92,7 +28,103 @@ app.use(function(req, res, next) {
     }
 });
 
+
+
+
+///////////////////////////// MONGODB schema///////////////////////////////////////////////
+
+
+const Per = mongoose.model('cat',new Schema({
+  id:Number,
+  name:String,
+  username:String,
+  email:String,
+  phone:String,
+  website:String,
+  address:{
+      street:String,
+      suite:String,
+      city:String,
+      zipcode:String,
+      geo:{
+            lat:String,
+            lng:String
+          }
+  },
+  company : {
+      name:String,
+      catchPhrase : String,
+      bs : String,
+  }
+}));
+
+/////////////////////////////GRAPH QL///////////////////////////////////////////////
+
+
+//GRAPH QL SCHEMA
+const typeDefs = `
+  type Query {
+    empget:[user],
+    emp(id:Int!):user
+
+  },
+  type Address{
+    street :String
+    suite :String
+    city :String
+    zipcode :String
+    geo:Geo
+  },
+  type Geo{
+    lat:String
+    lng:String
+  },
+  type Company{
+        name : String
+        catchPhrase : String
+        bs : String
+},
+   type  user{
+    address:Address
+    company:Company
+    name:String
+    id:Int
+    username :String
+    email:String
+    phone:String
+    website:String
+  }
+`;
+
+//GRAPH QL resolvers
+const resolvers = {
+  Query:{
+    empget:function(){
+       return new Promise(function(resolve, reject){
+            Per.find({}).exec(function(err,data){
+                resolve(data);
+              });
+       });
+        
+    },
+      emp:function(root,data){
+      return new Promise(function(resolve, reject){
+            Per.find({id:data.id}).exec(function(err,data){
+                resolve(data[0]);
+              });
+       });
+  }
+  }
+};
+
+//GRAPH QL mapping schema and resolvers
+var schema = makeExecutableSchema({typeDefs, resolvers});
+
+
+
+
 app.use('/all',graphqlHTTP(req=>{
+  console.log(req.body)
     return {
       schema: schema,
       rootValue: resolvers,
@@ -100,5 +132,12 @@ app.use('/all',graphqlHTTP(req=>{
     }
 }));
 
+app.get('/user',(req,res)=>{
+  Per.find({}).exec(function(err,data){
+                res.send(data);
+              });
+});
 
 app.listen(4000, () => console.log('Now browse to localhost:4000/graphiql'));
+
+
